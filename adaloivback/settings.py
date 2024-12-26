@@ -52,6 +52,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# settings.py
+AUTH_USER_MODEL = "accounts.CustomUser"
 
 # Application definition
 
@@ -62,7 +64,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "users",
+    "accounts",
     "corsheaders",
 ]
 
