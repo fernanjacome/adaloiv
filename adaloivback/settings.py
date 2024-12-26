@@ -80,6 +80,7 @@ MIDDLEWARE = [
 # Permitir los orígenes de tu frontend
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # Frontend de React en desarrollo
+    "http://localhost:3001",  # Frontend de React en desarrollo
 ]
 
 # Permitir las cabeceras necesarias
