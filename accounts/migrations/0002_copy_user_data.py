@@ -2,12 +2,11 @@ from django.db import migrations
 
 
 def copy_user_data(apps, schema_editor):
-    # Obtén el modelo de usuario estándar y el modelo CustomUser
-    User = apps.get_model("auth", "User")
+   
     CustomUser = apps.get_model("accounts", "CustomUser")
 
     # Copia los datos de los usuarios existentes en el modelo CustomUser
-    for user in User.objects.all():
+    for user in CustomUser.objects.all():
         CustomUser.objects.create(
             username=user.username,
             first_name=user.first_name,

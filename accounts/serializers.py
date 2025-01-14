@@ -1,9 +1,7 @@
 # serializers.py
-from django.contrib.auth import get_user_model
+
 from rest_framework import serializers
 from .models import CustomUser
-
-User = get_user_model()  # Obtiene el modelo de usuario configurado en settings.py
 
 
 class LoginSerializer(serializers.Serializer):
@@ -14,18 +12,14 @@ class LoginSerializer(serializers.Serializer):
         username = data.get("username")
         password = data.get("password")
 
-        user = User.objects.filter(username=username).first()
+        user = CustomUser.objects.filter(username=username).first()
         if user and user.check_password(password):
             return {"username": username, "password": password}
         raise serializers.ValidationError("Credenciales incorrectas")
 
-
-User = get_user_model()  # Obtiene el modelo de usuario configurado en settings.py
-
-
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
+        model = CustomUser  # Usa la clase del modelo, no una instancia
         fields = (
             "username",
             "password",
@@ -40,17 +34,16 @@ class RegisterSerializer(serializers.ModelSerializer):
         }
 
     def create(self, validated_data):
-        user = User.objects.create_user(
+        user = CustomUser.objects.create_user(
             username=validated_data["username"],
             password=validated_data["password"],
-            first_name=validated_data["first_name"],
-            last_name=validated_data["last_name"],
-            email=validated_data["email"],
+            first_name=validated_data.get("first_name", ""),
+            last_name=validated_data.get("last_name", ""),
+            email=validated_data.get("email", ""),
             middle_name=validated_data.get("middle_name", ""),
             role=validated_data.get("role", "patient"),
         )
         return user
-
 
 class IdentificationLoginSerializer(serializers.Serializer):
     identification_number = serializers.CharField()

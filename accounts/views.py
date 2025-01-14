@@ -9,6 +9,9 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import LoginSerializer
 from .serializers import RegisterSerializer
 from .serializers import IdentificationLoginSerializer
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from .models import Atemed
 
 
 class LoginView(APIView):
@@ -129,3 +132,33 @@ class IdentificationLoginView(APIView):
                 {"error": serializer.errors},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+class AtemedListView(APIView):
+    def get(self, request, pcte_id):
+        atemed_records = Atemed.objects.filter(Atemed_Pcte_Id=pcte_id)[:1000]
+        print(f"Found {len(atemed_records)} records for pcte_id={pcte_id}")
+
+        data = [
+            {
+                "Atemed_id": record.Atemed_id,
+                "Atemed_Prof_id": record.Atemed_Prof_id,
+                "Atemed_Pcte_Id": record.Atemed_Pcte_Id,
+                "Atemed_Ent_id": record.Atemed_Ent_id,
+                "Atemed_Fecha_Inicio": record.Atemed_Fecha_Inicio,
+                "Atemed_Hora_Inicio": record.Atemed_Hora_Inicio,
+                "Atemed_Fecha_Fin": record.Atemed_Fecha_Fin,
+                "Atemed_Hora_Fin": record.Atemed_Hora_Fin,
+                "Atemed_Diagnostico_CIE10": record.Atemed_Diagnostico_CIE10,
+                "Atemed_Not_Oblig": record.Atemed_Not_Oblig,
+                "Atemed_Tipo_Diag": record.Atemed_Tipo_Diag,
+                "Atemed_Cron_Diag": record.Atemed_Cron_Diag,
+                "Atemed_Con_Diagnostico": record.Atemed_Con_Diagnostico,
+                "Atemed_Tipo_Ate": record.Atemed_Tipo_Ate,
+                "Atemed_Receta": record.Atemed_Receta,
+                "F16": record.F16,
+                "F17": record.F17,
+            }
+            for record in atemed_records
+        ]
+
+        print("Data:", data)  # Imprime los datos antes de devolver la respuesta
+        return Response(data, status=status.HTTP_200_OK)
