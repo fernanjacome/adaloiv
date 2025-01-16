@@ -2,9 +2,10 @@ from django.contrib.auth import authenticate
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework import generics
 from django.http import JsonResponse
 from .models import Atemed, Profesional, Paciente
-from .serializers import LoginSerializer, AtemedSerializer
+from .serializers import LoginSerializer, AtemedSerializer, PacienteSerializer
 import json
 from django.views.decorators.csrf import csrf_exempt
 
@@ -59,13 +60,14 @@ class LoginProfesionalView(APIView):
                 response_data = {
                     "status": "success",
                     "message": "Login successful",
+                    "Prof_Id": profesional.id_Pro,
                     "Prof_FullNombre": profesional.Pro_FullNombre,
                     "Prof_Correo": profesional.Prof_Correo,
                     "Especialización": profesional.Especialización,                   
                 }
                 return Response(response_data, status=status.HTTP_200_OK)
             else:
-                return Response({"status": "error", "message": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+                return Response({"status": "error", "message": "Su correo o su contraseña son incorrectas."}, status=status.HTTP_401_UNAUTHORIZED)
         except Exception as e:
             return Response({"status": "error", "message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -107,3 +109,45 @@ class AtemedDetail(APIView):
             return Response(serializer.data)
         except Atemed.DoesNotExist:
             return Response({"error": "Atemed not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+class AddAtemedView(generics.CreateAPIView):
+    queryset = Atemed.objects.all()
+    serializer_class = AtemedSerializer
+
+    def create(self, request, *args, **kwargs):
+        # Crear el objeto usando el serializador
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        # Guardar el objeto y obtener la instancia creada
+        atemed_instance = serializer.save()
+
+        # Retornar la respuesta con el 'Atemed_id' generado
+        return Response({
+            'Atemed_id': atemed_instance.Atemed_id,
+            'message': 'Registro de Atemed creado correctamente'
+        }, status=status.HTTP_201_CREATED)
+        
+class GetPacienteView(generics.RetrieveAPIView):
+    queryset = Paciente.objects.all()
+    serializer_class = PacienteSerializer
+
+    def get(self, request, *args, **kwargs):
+        try:
+            paciente_id = kwargs.get('pk')
+
+            paciente_instance = self.get_queryset().filter(Pcte_id=paciente_id).first()
+
+            if not paciente_instance:
+                return Response({
+                    'message': f'No se encontró el paciente con ID: {paciente_id}'
+                }, status=status.HTTP_404_NOT_FOUND)
+
+            serializer = self.get_serializer(paciente_instance)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({
+                'message': 'Ocurrió un error al obtener la información del paciente',
+                'error': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

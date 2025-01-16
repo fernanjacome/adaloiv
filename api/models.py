@@ -1,31 +1,39 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+import time
 
+
+from django.db import models
 
 class Atemed(models.Model):
-    Atemed_id = models.AutoField(primary_key=True)
-    Atemed_Prof_id = models.IntegerField()
-    Atemed_Pcte_Id = models.IntegerField()
-    Atemed_Ent_id = models.IntegerField()
-    Atemed_Fecha_Inicio = models.DateField()
-    Atemed_Hora_Inicio = models.TimeField()
-    Atemed_Fecha_Fin = models.DateField()
-    Atemed_Hora_Fin = models.TimeField()
-    Atemed_Diagnostico_CIE10 = models.CharField(max_length=255)
-    Atemed_Not_Oblig = models.TextField()
-    Atemed_Tipo_Diag = models.CharField(max_length=50)
-    Atemed_Cron_Diag = models.CharField(max_length=50)
-    Atemed_Con_Diagnostico = models.CharField(max_length=50)
-    Atemed_Tipo_Ate = models.CharField(max_length=50)
-    Atemed_Receta = models.TextField()
-    F16 = models.CharField(max_length=255, blank=True, null=True)
-    F17 = models.CharField(max_length=255, blank=True, null=True)
+    Atemed_id = models.FloatField(primary_key=True, editable=False)  # Cambiado a Float
+    Atemed_Prof_id = models.FloatField(null=True, blank=True)
+    Atemed_Pcte_Id = models.FloatField(null=True, blank=True)
+    Atemed_Ent_id = models.FloatField(null=True, blank=True)
+    Atemed_Fecha_Inicio = models.DateField(null=True, blank=True)
+    Atemed_Hora_Inicio = models.TimeField(null=True, blank=True)
+    Atemed_Fecha_Fin = models.DateField(null=True, blank=True)
+    Atemed_Hora_Fin = models.TimeField(null=True, blank=True)
+    Atemed_Diagnostico_CIE10 = models.CharField(max_length=255, null=True, blank=True)
+    Atemed_Not_Oblig = models.FloatField(null=True, blank=True)
+    Atemed_Tipo_Diag = models.CharField(max_length=255, null=True, blank=True)
+    Atemed_Cron_Diag = models.CharField(max_length=255, null=True, blank=True)
+    Atemed_Con_Diagnostico = models.CharField(max_length=255, null=True, blank=True)
+    Atemed_Tipo_Ate = models.CharField(max_length=255, null=True, blank=True)
+    Atemed_Receta = models.CharField(max_length=255, null=True, blank=True)
+    F16 = models.CharField(max_length=255, null=True, blank=True)
+    F17 = models.CharField(max_length=255, null=True, blank=True)
 
     class Meta:
         db_table = 'Atemed'
 
-
-
+    def save(self, *args, **kwargs):
+        if not self.Atemed_id: 
+            # Obtener el tiempo en segundos desde la época y convertirlo en un entero
+            current_time = int(time.time())  # Convertir a entero para evitar decimales
+            self.Atemed_id = current_time  
+        super(Atemed, self).save(*args, **kwargs)
+        
 class Profesional(models.Model):
     id_Pro = models.IntegerField(primary_key=True)
     Pro_FullNombre = models.CharField(max_length=255)
@@ -93,7 +101,7 @@ class Entidad(models.Model):
     Ent_Tipo_Parr = models.CharField(max_length=255, null=True)
 
     class Meta:
-        db_table = 'Entidad$'
+        db_table = 'EntidadMedica'
 
     def __str__(self):
         return self.Ent_Nom
