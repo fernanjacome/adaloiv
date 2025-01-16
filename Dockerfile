@@ -1,26 +1,35 @@
-# Usar una imagen base de Python
+# Usar la imagen base de Python
 FROM python:3.9-slim
 
-# Instalar las dependencias del sistema
+# Instalar dependencias del sistema
 RUN apt-get update && apt-get install -y \
+    curl \
+    gnupg2 \
+    apt-transport-https \
+    ca-certificates \
     unixodbc-dev \
-    msodbcsql17 \
     gcc \
     g++ \
+    && curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
+    && curl https://packages.microsoft.com/config/debian/11/prod.list > /etc/apt/sources.list.d/mssql-release.list \
+    && apt-get update \
+    && ACCEPT_EULA=Y apt-get install -y msodbcsql17 \
     && rm -rf /var/lib/apt/lists/*
 
-# Configuración de directorios de trabajo
+# Establecer el directorio de trabajo
 WORKDIR /app
 
-# Instalar dependencias de Python
+# Copiar el archivo requirements.txt
 COPY requirements.txt /app/
+
+# Instalar las dependencias de Python
 RUN pip install -r requirements.txt
 
-# Copiar el código de la aplicación
+# Copiar el resto del código del proyecto
 COPY . /app/
 
-# Exponer el puerto (asegúrate de que el puerto coincida con el de tu app)
+# Exponer el puerto
 EXPOSE 8000
 
-# Ejecutar el servidor de Django
+# Comando para ejecutar la aplicación
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
