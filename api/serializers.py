@@ -74,4 +74,7 @@ class PacienteSerializer(serializers.ModelSerializer):
             'Pcte_porctj_disc'
         ]  
 
-  
+class PacienteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Paciente
+        fields = '__all__' 

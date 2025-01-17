@@ -1,5 +1,6 @@
 from django.contrib.auth import authenticate
 from rest_framework import status
+from django.forms.models import model_to_dict
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import generics
@@ -71,6 +72,8 @@ class LoginProfesionalView(APIView):
         except Exception as e:
             return Response({"status": "error", "message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+
+
 class LoginPacienteView(APIView):
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
@@ -81,18 +84,14 @@ class LoginPacienteView(APIView):
             try:
                 # Intentamos encontrar al paciente en la base de datos usando Pcte_id
                 paciente = Paciente.objects.get(Pcte_id=pcte_id)
-                # Devuelve información básica del paciente
+                
+                # Convierte el modelo Paciente completo a un diccionario
+                paciente_data = model_to_dict(paciente)
+                
+                # Devuelve información completa del paciente
                 response_data = {
                     "message": "Login exitoso",
-                    "Pcte_id": paciente.Pcte_id,
-                    "Pcte_nom": paciente.Pcte_nom,
-                    "Pcte_sexo": paciente.Pcte_sexo,
-                    "Pcte_fecha_nac": paciente.Pcte_fecha_nac,
-                    "Pcte_edad": paciente.Pcte_edad,
-                    "Pcte_celular": paciente.Pcte_celular,
-                    "Pcte_provincia": paciente.Pcte_provincia,
-                    "Pcte_canton": paciente.Pcte_canton,
-                    "Pcte_parroquia": paciente.Pcte_parroquia
+                    "Data": paciente_data
                 }
                 return Response(response_data, status=status.HTTP_200_OK)
             except Paciente.DoesNotExist:
@@ -101,14 +100,7 @@ class LoginPacienteView(APIView):
         else:
             # Si los datos no son válidos, retornamos un error 400 con los detalles
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-class AtemedDetail(APIView):
-    def get(self, request, Atemed_id):
-        try:
-            atemed = Atemed.objects.get(Atemed_id=Atemed_id)
-            serializer = AtemedSerializer(atemed)
-            return Response(serializer.data)
-        except Atemed.DoesNotExist:
-            return Response({"error": "Atemed not found"}, status=status.HTTP_404_NOT_FOUND)
+
         
 class AddAtemedView(generics.CreateAPIView):
     queryset = Atemed.objects.all()
@@ -151,3 +143,16 @@ class GetPacienteView(generics.RetrieveAPIView):
                 'message': 'Ocurrió un error al obtener la información del paciente',
                 'error': str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
+class RegistrarPacienteView(APIView):
+    def post(self, request):
+        serializer = PacienteSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"message": "Paciente registrado exitosamente", "data": serializer.data},
+                status=status.HTTP_201_CREATED
+            )
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
