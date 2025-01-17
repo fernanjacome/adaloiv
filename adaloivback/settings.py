@@ -23,9 +23,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": [
-    ],
-     "DEFAULT_PERMISSION_CLASSES": [
+    "DEFAULT_AUTHENTICATION_CLASSES": [],
+    "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.AllowAny",  # Permite el acceso sin necesidad de autenticación
     ],
 }
@@ -62,7 +61,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "api",
     "corsheaders",
-    'rest_framework',
+    "rest_framework",
 ]
 
 MIDDLEWARE = [
@@ -113,34 +112,34 @@ WSGI_APPLICATION = "adaloivback.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "mssql",
-#         "NAME": "ADALOIV",
-#         "USER": "extreme",
-#         "PASSWORD": "alexsoft",
-#         "HOST": "PC-FJACOME",
-#         "PORT": "",
-#         "OPTIONS": {
-#             "driver": "ODBC Driver 17 for SQL Server",
-#         },
-#     }
-# }
-
 DATABASES = {
-    'default': {
-        'ENGINE': 'mssql',
-        'NAME': 'ADALOIV2',
-        'USER': '',  # Deja esto vacío para la autenticación de Windows
-        'PASSWORD': '',  # Deja esto vacío para la autenticación de Windows
-        'HOST': 'JAZAT\\FJACOME',
-        'PORT': '',  # Por defecto es 1433, puedes dejarlo vacío si usas el puerto por defecto
-        'OPTIONS': {
-            'driver': 'ODBC Driver 17 for SQL Server',
-            'extra_params': 'Trusted_Connection=yes;',
+    "default": {
+        "ENGINE": "mssql",
+        "NAME": "ADALOIV2",
+        "USER": "extreme",
+        "PASSWORD": "alexsoft",
+        "HOST": "PC-FJACOME",
+        "PORT": "",
+        "OPTIONS": {
+            "driver": "ODBC Driver 17 for SQL Server",
         },
     }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'mssql',
+#         'NAME': 'ADALOIV2',
+#         'USER': '',  # Deja esto vacío para la autenticación de Windows
+#         'PASSWORD': '',  # Deja esto vacío para la autenticación de Windows
+#         'HOST': 'JAZAT\\FJACOME',
+#         'PORT': '',  # Por defecto es 1433, puedes dejarlo vacío si usas el puerto por defecto
+#         'OPTIONS': {
+#             'driver': 'ODBC Driver 17 for SQL Server',
+#             'extra_params': 'Trusted_Connection=yes;',
+#         },
+#     }
+# }
 
 
 # Password validation
