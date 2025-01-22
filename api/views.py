@@ -6,44 +6,12 @@ from rest_framework.views import APIView
 from rest_framework import generics
 from django.http import JsonResponse
 from .models import Atemed, Profesional, Paciente
-from .serializers import LoginSerializer, AtemedSerializer, PacienteSerializer
+from .serializers import LoginSerializer, AtemedSerializer, PacienteSerializer, AtemedSerializerConsulta
 import json
 from django.views.decorators.csrf import csrf_exempt
 
 
-class AtemedDetailView(APIView):
-    def get(self, request, atemed_id):
-        try:
-            # Filtrar por Atemed_id y limitar los resultados a los primeros 1000
-            atemed_records = Atemed.objects.filter(Atemed_id=atemed_id)[:1000]
-            
-            # Generar la respuesta con todos los campos solicitados
-            data = [
-                {
-                    "Atemed_id": record.Atemed_id,
-                    "Atemed_Prof_id": record.Atemed_Prof_id,
-                    "Atemed_Pcte_Id": record.Atemed_Pcte_Id,
-                    "Atemed_Ent_id": record.Atemed_Ent_id,
-                    "Atemed_Fecha_Inicio": record.Atemed_Fecha_Inicio,
-                    "Atemed_Hora_Inicio": record.Atemed_Hora_Inicio,
-                    "Atemed_Fecha_Fin": record.Atemed_Fecha_Fin,
-                    "Atemed_Hora_Fin": record.Atemed_Hora_Fin,
-                    "Atemed_Diagnostico_CIE10": record.Atemed_Diagnostico_CIE10,
-                    "Atemed_Not_Oblig": record.Atemed_Not_Oblig,
-                    "Atemed_Tipo_Diag": record.Atemed_Tipo_Diag,
-                    "Atemed_Cron_Diag": record.Atemed_Cron_Diag,
-                    "Atemed_Con_Diagnostico": record.Atemed_Con_Diagnostico,
-                    "Atemed_Tipo_Ate": record.Atemed_Tipo_Ate,
-                    "Atemed_Receta": record.Atemed_Receta,
-                    "F16": record.F16,
-                    "F17": record.F17,
-                }
-                for record in atemed_records
-            ]
-            
-            return Response(data, status=status.HTTP_200_OK)
-        except Atemed.DoesNotExist:
-            return Response({"error": "Atemed with the given ID does not exist."}, status=status.HTTP_404_NOT_FOUND)
+
 class LoginProfesionalView(APIView):
     def post(self, request):
         try:
@@ -120,6 +88,23 @@ class AddAtemedView(generics.CreateAPIView):
             'message': 'Registro de Atemed creado correctamente'
         }, status=status.HTTP_201_CREATED)
         
+        
+class ConsultarAtemedPorPcteIdView(APIView):
+   def get(self, request, pcte_id):
+        # Filtrar los registros por el campo Atemed_Pcte_Id
+        registros = Atemed.objects.filter(Atemed_Pcte_Id=pcte_id)
+        if registros.exists():
+            serializer = AtemedSerializer(registros, many=True)
+            return Response(
+                {"message": "Registros encontrados", "data": serializer.data},
+                status=status.HTTP_200_OK
+            )
+        else:
+            return Response(
+                {"message": "No se encontraron registros para el Pcte_Id proporcionado"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
 class GetPacienteView(generics.RetrieveAPIView):
     queryset = Paciente.objects.all()
     serializer_class = PacienteSerializer
@@ -133,7 +118,7 @@ class GetPacienteView(generics.RetrieveAPIView):
             if not paciente_instance:
                 return Response({
                     'message': f'No se encontró el paciente con ID: {paciente_id}'
-                }, status=status.HTTP_404_NOT_FOUND)
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
             serializer = self.get_serializer(paciente_instance)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -156,3 +141,31 @@ class RegistrarPacienteView(APIView):
             )
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+class EditarPacienteView(APIView):
+    def put(self, request, pcte_id):
+        try:
+            paciente = Paciente.objects.get(Pcte_id=pcte_id)  # Obtener paciente por ID
+        except Paciente.DoesNotExist:
+            return Response(
+                {"message": "Paciente no encontrado"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # No permitir que el ID sea modificado
+        data = request.data # Eliminar el campo 'Pcte_id' de los datos entrantes
+        
+        # Crear el serializer con los datos actualizados, sin modificar el ID
+        serializer = PacienteSerializer(paciente, data=data)
+        
+        if serializer.is_valid():
+            serializer.save()  # Guardar los datos actualizados del paciente
+            return Response(
+                {"message": "Paciente actualizado exitosamente", "data": serializer.data},
+                status=status.HTTP_200_OK
+            )
+        else:
+            return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST
+            )

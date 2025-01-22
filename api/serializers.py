@@ -6,16 +6,12 @@ from .models import Paciente, Atemed, Profesional, Entidad
 class LoginSerializer(serializers.Serializer):
     Pcte_id = serializers.CharField(max_length=255)
 
+
+
 class AtemedSerializer(serializers.ModelSerializer):
     class Meta:
         model = Atemed
-        fields = ['Atemed_Prof_id', 'Atemed_Pcte_Id', 'Atemed_Ent_id', 
-                  'Atemed_Fecha_Inicio', 'Atemed_Hora_Inicio', 
-                  'Atemed_Fecha_Fin', 'Atemed_Hora_Fin', 
-                  'Atemed_Diagnostico_CIE10', 'Atemed_Not_Oblig', 
-                  'Atemed_Tipo_Diag', 'Atemed_Cron_Diag', 
-                  'Atemed_Con_Diagnostico', 'Atemed_Tipo_Ate', 
-                  'Atemed_Receta', 'F16', 'F17'] 
+        fields = '__all__'   
 
     def validate_Atemed_Prof_id(self, value):
         # Verificar si el Profesional existe
@@ -41,6 +37,21 @@ class AtemedSerializer(serializers.ModelSerializer):
         
         # Retornar el 'Atemed_id' generado
         return atemed_instance
+    
+class AtemedSerializerConsulta(serializers.ModelSerializer):  
+    class Meta:
+        model = Atemed
+        fields = '__all__'
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        # Convertir datetime a date para los campos Atemed_Fecha_Inicio y Atemed_Fecha_Fin
+        if instance.Atemed_Fecha_Inicio:
+            representation['Atemed_Fecha_Inicio'] = instance.Atemed_Fecha_Inicio.date()
+        if instance.Atemed_Fecha_Fin:
+            representation['Atemed_Fecha_Fin'] = instance.Atemed_Fecha_Fin.date()
+        return representation
+    
 class PacienteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Paciente
