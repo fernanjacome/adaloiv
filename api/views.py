@@ -105,6 +105,23 @@ class ConsultarAtemedPorPcteIdView(APIView):
                 status=status.HTTP_404_NOT_FOUND
             )
 
+class ConsultarAtemedPorIdView(APIView):
+    def get(self, request, atemed_id):
+        # Filtrar el registro por el campo Atemed_id
+        try:
+            registro = Atemed.objects.get(Atemed_id=atemed_id)
+            serializer = AtemedSerializerConsulta(registro)
+            return Response(
+                {"message": "Registro encontrado", "data": serializer.data},
+                status=status.HTTP_200_OK
+            )
+        except Atemed.DoesNotExist:
+            return Response(
+                {"message": "No se encontró un registro con el Atemed_id proporcionado"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+
 class GetPacienteView(generics.RetrieveAPIView):
     queryset = Paciente.objects.all()
     serializer_class = PacienteSerializer
